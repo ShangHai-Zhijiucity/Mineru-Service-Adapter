@@ -1,0 +1,27 @@
+{
+  "model_config": {
+    "layout_model": {
+      "model_type": "onnx",
+      "model_path": "auto"
+    },
+    "text_model": {
+      "model_type": "onnx",
+      "model_path": "auto"
+    },
+    "formula_model": {
+      "model_type": "onnx",
+      "model_path": "auto"
+    },
+    "table_model": {
+      "model_type": "onnx",
+      "model_path": "auto"
+    }
+  },
+  "device": "cuda",
+  "parse_method": "auto",
+  "output_dir": "./output",
+  "enable_image_ocr": true,
+  "enable_table_markdown": true,
+  "enable_formula_markdown": true
+}
+

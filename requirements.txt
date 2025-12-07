@@ -1,0 +1,8 @@
+fastapi
+uvicorn
+httpx
+minio
+python-multipart
+loguru
+requests
+
