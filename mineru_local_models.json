@@ -1,0 +1,8 @@
+{
+  "models-dir": {
+    "pipeline": "/root/.cache/magic-pdf/modelscope/models/OpenDataLab/PDF-Extract-Kit-1___0",
+    "vlm": "/root/.cache/magic-pdf/MinerU2.5-2509-1.2B"
+  }
+}
+
+
