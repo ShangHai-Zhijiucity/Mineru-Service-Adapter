@@ -71,30 +71,45 @@ async def run_in_thread(func, *args, **kwargs):
     loop = asyncio.get_running_loop()
     return await loop.run_in_executor(None, partial(func, *args, **kwargs))
 
-def kill_process_tree(pid: int):
-    """暴力清理进程，增加 SIGKILL"""
+def kill_process_tree(pid: int, timeout: int = 5):
+    """终止进程树"""
     try:
         parent = psutil.Process(pid)
+    except psutil.NoSuchProcess:
+        return
+    try:
+        # 先尝试终止整个进程组（mineru-api 启动时使用 setsid）
+        if sys.platform != "win32":
+            try:
+                os.killpg(parent.pid, signal.SIGTERM)
+            except Exception:
+                pass
+
         children = parent.children(recursive=True)
         for child in children:
             try:
-                child.terminate() # 先礼
+                child.terminate()
             except psutil.NoSuchProcess:
                 pass
         parent.terminate()
-        
-        # 给一点时间让它们死
-        gone, alive = psutil.wait_procs(children + [parent], timeout=3)
-        
-        # 后兵：强制 kill
-        for p in alive:
-            try:
-                p.kill()
-                logger.warning(f"Force killed process {p.pid}")
-            except Exception:
-                pass
-    except psutil.NoSuchProcess:
-        pass
+
+        # 给 CUDA 运行时一点时间做清理
+        gone, alive = psutil.wait_procs(children + [parent], timeout=timeout)
+
+        # 强制 kill（含进程组）
+        if alive:
+            if sys.platform != "win32":
+                try:
+                    os.killpg(parent.pid, signal.SIGKILL)
+                except Exception:
+                    pass
+            for p in alive:
+                try:
+                    p.kill()
+                    logger.warning(f"Force killed process {p.pid}")
+                except Exception:
+                    pass
+            psutil.wait_procs(alive, timeout=2)
     except Exception as e:
         logger.error(f"Failed to kill process {pid}: {e}")
 
